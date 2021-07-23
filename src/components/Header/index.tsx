@@ -1,3 +1,4 @@
+import { GithubButton } from '../GithubButton'
 import styles from './styles.module.scss'
 
 export function Header() {
@@ -14,6 +15,7 @@ export function Header() {
             Home</a>
           <a>Posts</a>
         </nav>
+        <GithubButton />
       </div>
     </header>
   )
