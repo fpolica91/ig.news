@@ -6,7 +6,7 @@ import { stripe } from '../../../services/stripe'
 export async function saveSubscription(
   subscriptionId: string,
   customerId: string,
-  createAction = true
+  createAction = false
 ) {
   console.log(subscriptionId, customerId, "the api dawg")
   /**
