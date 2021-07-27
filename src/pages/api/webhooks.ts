@@ -44,12 +44,10 @@ export default async (request: NextApiRequest, response: NextApiResponse) => {
         switch (type) {
           case 'customer.subscription.updated':
           case 'customer.subscription.deleted':
-          case 'customer.subscription.created':
             const subscription = event.data.object as Stripe.Subscription
             await saveSubscription(
               subscription.id,
               subscription.customer.toString(),
-              type === "customer.subscription.created"
             )
             break;
           case 'checkout.session.completed':
