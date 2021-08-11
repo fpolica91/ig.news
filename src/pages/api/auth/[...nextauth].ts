@@ -3,6 +3,8 @@ import { query as q } from 'faunadb'
 import Providers from 'next-auth/providers'
 import { fauna } from '../../../services/fauna'
 
+
+
 export default NextAuth({
   // Configure one or more authentication providers
   providers: [
@@ -13,17 +15,46 @@ export default NextAuth({
     }),
     // ...add more providers here
   ],
-  // jwt: {
-  // NEXTAUTH_URL
-  // signingKey: process.env.SIGNIN_JWT_KEY
-  // signingKey: '{"kty":"oct","kid":"suDnhBhRxPf3eKddG4z0H2c3xAmB6lYsVYxJqRXRCrs","alg":"HS512","k":"oh-OI6yHk_DLSWVrfEQyo5IKa68qCKYvpYbZ00-jCQo"}',
-  // encryptionKey: '{"kty":"oct","kid":"suDnhBhRxPf3eKddG4z0H2c3xAmB6lYsVYxJqRXRCrs","alg":"HS512","k":"oh-OI6yHk_DLSWVrfEQyo5IKa68qCKYvpYbZ00-jCQo"}'
-  // },
+
   callbacks: {
+    async session(session) {
+      try {
+        const userActiveSubscription = await fauna.query(
+          q.Get(
+            q.Intersection([
+              q.Match(
+                q.Index('subscription_by_user_ref'),
+                q.Select(
+                  "ref",
+                  q.Get(
+                    q.Match(
+                      q.Index('users_by_email'),
+                      q.Casefold(session.user.email)
+                    )
+                  )
+                )
+              ),
+              q.Match(
+                q.Index('subscription_by_status'),
+                "active"
+              )
+            ])
+          ))
+        return {
+          ...session,
+          activeSubscription: userActiveSubscription
+        }
+      } catch {
+        return {
+          ...session,
+          activeSubscription: null
+        }
+      }
+    },
+
     async signIn(user, account, profile) {
       try {
         const { email } = user
-
         await fauna.query(
           q.If(
             q.Not(
